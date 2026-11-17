@@ -2,7 +2,7 @@
 Shared utility functions for the Swedish retrieval project.
 Import with: from src.utils import *  (or adjust path as needed)
 """
-
+import re
 from datasets import load_dataset, concatenate_datasets
 from rank_bm25 import BM25Okapi
 from sentence_transformers import SentenceTransformer
@@ -40,10 +40,14 @@ def build_qrels_dict(qrels):
 
 # ---------- BM25 ----------
 
+def tokenize(text):
+    # lowercase(a-z, å, ä, ö, number) and remove punctuation, then split on whitespace
+    return re.findall(r"\w+", text.lower())
+
 def build_bm25(corpus):
     corpus_ids = [doc["_id"] for doc in corpus]
     corpus_texts = [doc["text"] for doc in corpus]
-    tokenized_corpus = [t.lower().split() for t in corpus_texts]
+    tokenized_corpus = [tokenize(t) for t in corpus_texts]
     return BM25Okapi(tokenized_corpus), corpus_ids, corpus_texts
 
 
@@ -106,7 +110,7 @@ def reciprocal_rank_fusion(bm25_ranked_ids, dense_ranked_ids, k=60):
 
 
 def search_hybrid(query_text, bm25, corpus_ids, dense_embeddings, model, top_k=10, pool_size=100):
-    tokenized_query = query_text.lower().split()
+    tokenized_query = tokenize(query_text)
     bm25_scores = bm25.get_scores(tokenized_query)
     bm25_top_indices = bm25_scores.argsort()[::-1][:pool_size]
     bm25_ranked_ids = [corpus_ids[i] for i in bm25_top_indices]
