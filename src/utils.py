@@ -54,7 +54,7 @@ def build_bm25(corpus):
 # ---------- Chunking (long documents) ----------
 
 def chunk_text(text, chunk_size=400, overlap=50):
-    words = tokenize(text)
+    words = text.split()
     if len(words) <= chunk_size:
         return [text]
     chunks = []
