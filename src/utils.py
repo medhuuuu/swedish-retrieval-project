@@ -54,7 +54,7 @@ def build_bm25(corpus):
 # ---------- Chunking (long documents) ----------
 
 def chunk_text(text, chunk_size=400, overlap=50):
-    words = text.split()
+    words = tokenize(text)
     if len(words) <= chunk_size:
         return [text]
     chunks = []
@@ -120,7 +120,7 @@ def search_hybrid(query_text, bm25, corpus_ids, dense_embeddings, model, top_k=1
 
 
 def search_hybrid_chunked(query_text, bm25, corpus_ids, chunk_embeddings, parent_ids, model, top_k=10, pool_size=100):
-    tokenized_query = query_text.lower().split()
+    tokenized_query = tokenize(query_text)
     bm25_scores = bm25.get_scores(tokenized_query)
     bm25_top_indices = bm25_scores.argsort()[::-1][:pool_size]
     bm25_ranked_ids = [corpus_ids[i] for i in bm25_top_indices]
